@@ -1,0 +1,745 @@
+<!-- START OF FILE index.html -->
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RS GAME BD - Play</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: white; margin: 0; font-family: 'Poppins', sans-serif; overflow-x: hidden; user-select: none; }
+        
+        .glow-text {
+            color: #eab308;
+            text-shadow: 0 0 5px #eab308, 0 0 10px #ca8a04;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 2px #eab308, 0 0 5px #ca8a04; }
+            to { text-shadow: 0 0 10px #eab308, 0 0 20px #facc15; }
+        }
+
+        .game-card { 
+            background: #1e293b; border-radius: 12px; transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); cursor: pointer;
+            border: 1px solid #334155; position: relative;
+        }
+        .game-card:hover { transform: translateY(-5px); box-shadow: 0 0 15px #eab308; border-color: #eab308; }
+        
+        /* Fav Icon Style */
+        .fav-btn {
+            position: absolute; top: 8px; right: 8px; z-index: 10;
+            background: rgba(0,0,0,0.6); border-radius: 50%; padding: 5px;
+            transition: transform 0.2s;
+        }
+        .fav-btn:hover { transform: scale(1.2); }
+        .fav-active { color: #ef4444; fill: #ef4444; }
+        .fav-inactive { color: #94a3b8; fill: none; }
+
+        .input-field { 
+            background: #334155; color: white; border: 1px solid #475569; 
+            width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 12px;
+            outline: none;
+        }
+        .input-field:focus { border-color: #eab308; }
+
+        .search-box {
+            background: #1e293b; border: 1px solid #475569; color: white;
+            width: 100%; padding: 12px 15px; border-radius: 50px;
+            outline: none; transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .search-box:focus { border-color: #eab308; box-shadow: 0 0 10px rgba(234, 179, 8, 0.3); }
+
+        /* Sections */
+        #login-page { display: none; overflow-y: auto; } 
+        #home-page { display: none; overflow-y: auto; min-height: 100vh; padding-bottom: 80px; } 
+        #game-view { display: none; }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #1e293b; border-top: 1px solid #334155;
+            display: flex; justify-content: space-around; padding: 10px 0;
+            z-index: 50; box-shadow: 0 -4px 10px rgba(0,0,0,0.3);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 10px; color: #94a3b8; width: 25%; text-align: center;
+            background: none; border: none; cursor: pointer;
+        }
+        .nav-item svg { width: 24px; height: 24px; margin: 0 auto 4px; }
+        .nav-item.active { color: #eab308; }
+
+        /* Exit Ad Overlay */
+        #exit-ad-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95); z-index: 9999;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .loader { border: 3px solid #334155; border-top: 3px solid #eab308; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOGIN & REGISTER PAGE -->
+    <div id="login-page" class="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-[#0f172a] w-full">
+        <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700 w-full max-w-sm">
+            <h1 class="text-3xl font-extrabold glow-text mb-2">RS GAME BD</h1>
+            
+            <!-- LOGIN FORM -->
+            <div id="login-form-section">
+                <p class="text-slate-400 text-sm mb-6">আপনার অ্যাকাউন্ট লগইন করুন</p>
+                <div class="text-left w-full">
+                    <input type="email" id="email-input" placeholder="Email" class="input-field">
+                    <input type="password" id="password-input" placeholder="Password" class="input-field">
+                    <button id="email-login-btn" type="button" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 rounded-lg transition mt-2">লগইন করুন</button>
+                </div>
+                
+                <p class="mt-4 text-sm text-slate-400">
+                    একাউন্ট নেই? <span id="go-to-register" class="text-yellow-500 cursor-pointer font-bold hover:underline">রেজিস্ট্রেশন করুন</span>
+                </p>
+            </div>
+
+            <!-- REGISTRATION FORM -->
+            <div id="register-form-section" class="hidden">
+                <p class="text-slate-400 text-sm mb-6">নতুন অ্যাকাউন্ট তৈরি করুন</p>
+                <div class="text-left w-full">
+                    <input type="email" id="reg-email-input" placeholder="New Email" class="input-field">
+                    <input type="password" id="reg-password-input" placeholder="New Password (Min 6 chars)" class="input-field">
+                    <button id="register-btn" type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition mt-2">রেজিস্ট্রেশন করুন</button>
+                </div>
+
+                <p class="mt-4 text-sm text-slate-400">
+                    আগেই একাউন্ট আছে? <span id="go-to-login" class="text-yellow-500 cursor-pointer font-bold hover:underline">লগইন করুন</span>
+                </p>
+            </div>
+            
+            <div class="flex items-center my-4">
+                <div class="flex-grow h-px bg-slate-600"></div>
+                <span class="px-3 text-slate-500 text-xs">অথবা</span>
+                <div class="flex-grow h-px bg-slate-600"></div>
+            </div>
+
+            <button id="google-login" type="button" class="flex items-center justify-center bg-white hover:bg-gray-100 text-gray-800 px-6 py-3 rounded-lg font-bold w-full transition">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5 mr-3" alt="Google">
+                <span>Login with Google</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. HOME PAGE WRAPPER -->
+    <div id="home-page" class="w-full">
+        <!-- Header -->
+        <header class="bg-slate-900 p-4 sticky top-0 z-40 border-b border-slate-700 flex justify-between items-center shadow-lg w-full">
+            <h2 class="text-xl font-bold italic glow-text">RS GAME</h2>
+        </header>
+
+        <main class="p-4 max-w-6xl mx-auto w-full">
+            
+            <!-- TAB 1: ALL GAMES -->
+            <div id="tab-home" class="tab-content">
+                <div class="mb-6 relative">
+                    <input type="text" id="game-search" placeholder="🔍 গেম সার্চ করুন..." class="search-box">
+                </div>
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-1 h-6 bg-yellow-500"></div>
+                    <h3 class="text-lg font-semibold text-slate-200 glow-text">Online Games</h3>
+                </div>
+                <div id="loading-spinner" class="loader"></div>
+                <div id="status-message" class="text-center text-slate-500 hidden">No games found.</div>
+                <div id="game-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full"></div>
+            </div>
+
+            <!-- TAB 2: FAVORITES -->
+            <div id="tab-favorites" class="tab-content hidden">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-1 h-6 bg-red-500"></div>
+                    <h3 class="text-lg font-semibold text-slate-200 glow-text">My Favorite Games</h3>
+                </div>
+                <div id="fav-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 w-full">
+                    <p class="col-span-2 text-slate-500 text-center">কোনো গেম ফেভারিট করা হয়নি।</p>
+                </div>
+            </div>
+
+            <!-- TAB 3: HISTORY -->
+            <div id="tab-history" class="tab-content hidden">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-1 h-6 bg-green-500"></div>
+                    <h3 class="text-lg font-semibold text-slate-200 glow-text">Play History (Today)</h3>
+                </div>
+                <div id="history-list" class="flex flex-col gap-3 w-full"></div>
+            </div>
+
+            <!-- TAB 4: PROFILE -->
+            <div id="tab-profile" class="tab-content hidden flex flex-col items-center pt-10">
+                <div class="w-24 h-24 rounded-full bg-slate-700 border-2 border-yellow-500 flex items-center justify-center text-4xl mb-4">
+                    👤
+                </div>
+                <h2 id="profile-name" class="text-2xl font-bold text-white mb-1">User Name</h2>
+                <p id="profile-email" class="text-slate-400 mb-8">user@example.com</p>
+                
+                <button id="logout-btn" class="w-full max-w-xs bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition shadow-lg">
+                    Log Out
+                </button>
+            </div>
+
+        </main>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('home')">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('favorites')">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <span>Favorites</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('history')">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                <span>History</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('profile')">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- 3. GAME VIEW PAGE -->
+    <div id="game-view" class="fixed inset-0 bg-[#0f172a] z-50 flex-col w-full h-full">
+        <!-- Back Button Removed, Only Title Remains -->
+        <div class="bg-slate-900 p-3 flex items-center justify-center shadow-md border-b border-slate-700 z-30 w-full relative">
+            <span id="playing-game-name" class="text-white font-medium truncate glow-text">Game Loading...</span>
+        </div>
+
+        <div id="entry-ad-container" class="w-full h-full absolute inset-0 bg-black z-40 hidden flex-col items-center justify-center p-0">
+            <div class="relative w-full h-full flex items-center justify-center bg-black">
+                <div id="direct-media-container" class="w-full h-full max-w-5xl max-h-[85vh] flex items-center justify-center relative hidden">
+                    <img id="entry-ad-image" src="" class="w-full h-full object-contain hidden">
+                    <video id="entry-ad-video" src="" class="w-full h-full object-contain hidden" playsinline></video>
+                </div>
+                <div id="smartlink-container" class="w-full h-full flex flex-col items-center justify-center hidden z-50 px-6">
+                    <p class="text-yellow-400 text-lg mb-6 text-center font-bold">গেমটি চালু করতে নিচের বাটনে ক্লিক করুন 👇</p>
+                    <button id="smartlink-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-10 rounded-full text-xl shadow-[0_0_20px_rgba(37,99,235,0.5)] border-2 border-blue-400 transform transition hover:scale-105 flex items-center gap-2 cursor-pointer z-50 relative pointer-events-auto">
+                        🚀 Click to Unlock Game
+                    </button>
+                </div>
+                <div class="absolute bottom-10 left-0 right-0 flex flex-col items-center justify-center z-50 px-4">
+                    <p id="entry-ad-timer" class="text-yellow-400 text-xl font-bold mb-4 bg-black/60 px-4 py-2 rounded-full border border-yellow-500/50 hidden">অপেক্ষা করুন...</p>
+                    <button id="entry-skip-btn" class="w-full max-w-xs bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-full text-lg shadow-2xl hidden transform transition hover:scale-105 border-2 border-green-400">
+                        Skip Video ▶
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MAIN GAME IFRAME -->
+        <iframe id="main-game-iframe" class="w-full h-full flex-grow border-none bg-black hidden" allowfullscreen></iframe>
+    </div>
+
+    <!-- 4. EXIT AD OVERLAY -->
+    <div id="exit-ad-overlay">
+        <div class="bg-slate-800 p-6 rounded-2xl max-w-sm w-full mx-4 text-center border border-slate-600 relative">
+            <div class="absolute top-2 right-2">
+                <button onclick="closeExitAd()" class="text-slate-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <h3 class="text-xl font-bold text-yellow-500 mb-4 glow-text">SPONSORED</h3>
+            <div class="bg-black w-full h-64 rounded-lg flex items-center justify-center border border-slate-700 mb-4 overflow-hidden">
+                <img id="exit-ad-image-display" src="" class="w-full h-full object-contain">
+                <p id="no-ad-text" class="absolute text-xs text-slate-500 hidden">No Ad Available</p>
+            </div>
+            <button onclick="closeExitAd()" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 rounded-lg transition">Close</button>
+        </div>
+    </div>
+
+  <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJyPU2unY1ritu_GKKIbyWUdMGLn0E208",
+            authDomain: "md-abdur-90128.firebaseapp.com",
+            databaseURL: "https://md-abdur-90128-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "md-abdur-90128",
+            messagingSenderId: "569558327881",
+            appId: "1:569558327881:web:c4f78129bb99bcd5ad5598"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentUser = null;
+        let adData = { urls: [], timer: 5 };
+        let allGamesData = [];
+        let gameStartTime = 0; 
+
+        window.handleAndroidGoogleLogin = (idToken) => {
+            const credential = GoogleAuthProvider.credential(idToken);
+            signInWithCredential(auth, credential)
+                .then((userCredential) => {
+                })
+                .catch((error) => {
+                    alert("Authentication Failed: " + error.message);
+                });
+        };
+
+        window.switchTab = (tabName) => {
+            const tabs = ['home', 'favorites', 'history', 'profile'];
+            const buttons = document.querySelectorAll('.nav-item');
+            
+            tabs.forEach((t, index) => {
+                const section = document.getElementById(`tab-${t}`);
+                if (t === tabName) {
+                    section.classList.remove('hidden');
+                    buttons[index].classList.add('active');
+                } else {
+                    section.classList.add('hidden');
+                    buttons[index].classList.remove('active');
+                }
+            });
+
+            if(tabName === 'favorites') renderFavorites();
+            if(tabName === 'history') renderHistory();
+        };
+
+        // --- UPDATED AD LISTENER (SUPPORTS 6 SLOTS) ---
+        onValue(ref(db, 'AdSettings'), (snapshot) => {
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                adData.timer = data.timer || 5;
+                adData.urls = [];
+
+                // Logic for New 6 Slots System
+                if (data.slots) {
+                    Object.values(data.slots).forEach(slot => {
+                        if (slot.link && slot.link.trim() !== "") {
+                            adData.urls.push(slot.link);
+                        }
+                    });
+                } 
+                // Fallback for Old System (Just in case)
+                else if (data.adUrls && Array.isArray(data.adUrls)) {
+                    adData.urls = data.adUrls;
+                } else if (data.adUrl) {
+                    adData.urls = [data.adUrl]; 
+                }
+            } else {
+                adData.urls = [];
+            }
+        });
+        // ----------------------------------------------
+
+        const loginSection = document.getElementById('login-form-section');
+        const registerSection = document.getElementById('register-form-section');
+        
+        document.getElementById('go-to-register').addEventListener('click', () => {
+            loginSection.classList.add('hidden');
+            registerSection.classList.remove('hidden');
+        });
+
+        document.getElementById('go-to-login').addEventListener('click', () => {
+            registerSection.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+        });
+
+        const loginPage = document.getElementById('login-page');
+        const homePage = document.getElementById('home-page');
+        
+        window.addEventListener('popstate', (event) => {
+            if (document.getElementById('game-view').style.display === 'flex') {
+                closeGameView();
+                history.pushState({page: 'home'}, "Home", "#home");
+            }
+        });
+
+        document.getElementById('google-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.Android && window.Android.triggerGoogleLogin) {
+                window.Android.triggerGoogleLogin();
+            } else {
+                alert("Please use the Android App to Login with Google.");
+            }
+        });
+
+        document.getElementById('email-login-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email-input').value;
+            const pass = document.getElementById('password-input').value;
+            if(email && pass) {
+                signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+            } else {
+                alert("Please enter email and password");
+            }
+        });
+
+        document.getElementById('register-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reg-email-input').value;
+            const pass = document.getElementById('reg-password-input').value;
+            if(email && pass) {
+                createUserWithEmailAndPassword(auth, email, pass)
+                    .then(() => alert("Registration Successful!"))
+                    .catch((error) => alert(error.message));
+            } else {
+                alert("Please fill in email and password");
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                loginPage.style.display = 'none';
+                homePage.style.display = 'block';
+                
+                document.getElementById('profile-email').innerText = user.email;
+                document.getElementById('profile-name').innerText = user.displayName || user.email.split('@')[0];
+
+                history.replaceState({page: 'home'}, "Home", "#home");
+                loadGames();
+            } else {
+                loginPage.style.display = 'flex';
+                homePage.style.display = 'none';
+                document.getElementById('game-view').style.display = 'none';
+            }
+        });
+
+        function getFavorites() {
+            if(!currentUser) return [];
+            const key = `favs_${currentUser.uid}`;
+            return JSON.parse(localStorage.getItem(key)) || [];
+        }
+
+        function toggleFavorite(e, gameUrl) {
+            e.stopPropagation(); 
+            if(!currentUser) return;
+            
+            const key = `favs_${currentUser.uid}`;
+            let favs = getFavorites();
+            
+            if(favs.includes(gameUrl)) {
+                favs = favs.filter(url => url !== gameUrl);
+            } else {
+                favs.push(gameUrl);
+            }
+            
+            localStorage.setItem(key, JSON.stringify(favs));
+            renderGames(allGamesData); 
+            renderFavorites(); 
+        }
+
+        function renderFavorites() {
+            const favList = document.getElementById('fav-list');
+            const favUrls = getFavorites();
+            const favGames = allGamesData.filter(g => favUrls.includes(g.gameLink));
+
+            favList.innerHTML = "";
+            
+            if(favGames.length === 0) {
+                favList.innerHTML = `<p class="col-span-full text-slate-500 text-center mt-10">You haven't added any favorites yet.</p>`;
+                return;
+            }
+
+            favGames.forEach(game => {
+                const div = createGameCard(game, true);
+                favList.appendChild(div);
+            });
+        }
+
+        function saveHistory(gameName, durationSec) {
+            if(!currentUser) return;
+            const key = `history_${currentUser.uid}`;
+            let history = JSON.parse(localStorage.getItem(key)) || [];
+            
+            const now = new Date();
+            const entry = {
+                name: gameName,
+                duration: durationSec,
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString(),
+                timestamp: now.getTime()
+            };
+            
+            history.unshift(entry); 
+            if(history.length > 50) history.pop();
+            localStorage.setItem(key, JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            if(!currentUser) return;
+            
+            const key = `history_${currentUser.uid}`;
+            const history = JSON.parse(localStorage.getItem(key)) || [];
+            const today = new Date().toLocaleDateString();
+            
+            const todaysHistory = history.filter(h => h.date === today);
+            
+            list.innerHTML = "";
+            if(todaysHistory.length === 0) {
+                list.innerHTML = `<p class="text-slate-500 text-center mt-10">No games played today.</p>`;
+                return;
+            }
+
+            todaysHistory.forEach(h => {
+                let durationStr = "";
+                if(h.duration < 60) durationStr = `${Math.floor(h.duration)} sec`;
+                else durationStr = `${Math.floor(h.duration / 60)} min ${Math.floor(h.duration % 60)} sec`;
+
+                const div = document.createElement('div');
+                div.className = "bg-slate-800 p-4 rounded-lg flex justify-between items-center border border-slate-700";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-bold text-yellow-500">${h.name}</p>
+                        <p class="text-xs text-slate-400">Time: ${h.time}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-white font-mono bg-slate-700 px-2 py-1 rounded">⏳ ${durationStr}</p>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function loadGames() {
+            const list = document.getElementById('game-list');
+            const spinner = document.getElementById('loading-spinner');
+            const msg = document.getElementById('status-message');
+
+            onValue(ref(db, 'Games'), (snapshot) => {
+                allGamesData = [];
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        const game = child.val();
+                        if(game.gameLink && game.gameName) {
+                            allGamesData.push(game);
+                        }
+                    });
+                    renderGames(allGamesData);
+                    spinner.style.display = "none";
+                    msg.style.display = "none";
+                } else {
+                    list.innerHTML = "";
+                    spinner.style.display = "none";
+                    msg.style.display = "block";
+                }
+            });
+        }
+
+        function createGameCard(game, isFavTab = false) {
+            const favs = getFavorites();
+            const isFav = favs.includes(game.gameLink);
+            
+            const div = document.createElement('div');
+            div.className = "game-card p-2 flex flex-col";
+            div.innerHTML = `
+                <div class="fav-btn ${isFav ? 'fav-active' : 'fav-inactive'}" onclick="window.toggleFavorite(event, '${game.gameLink}')">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </div>
+                <div class="overflow-hidden rounded-lg mb-2 h-32 bg-slate-700 relative">
+                    <img src="${game.gameImage}" class="w-full h-full object-cover" loading="lazy">
+                </div>
+                <p class="text-center text-sm font-bold truncate text-slate-200 glow-text">${game.gameName}</p>
+            `;
+            div.addEventListener('click', () => {
+                prepareGame(game.gameLink, game.gameName);
+            });
+            window.toggleFavorite = toggleFavorite;
+            return div;
+        }
+
+        function renderGames(games) {
+            const list = document.getElementById('game-list');
+            list.innerHTML = "";
+            games.forEach(game => {
+                list.appendChild(createGameCard(game));
+            });
+        }
+
+        document.getElementById('game-search').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredGames = allGamesData.filter(game => 
+                game.gameName.toLowerCase().includes(searchTerm)
+            );
+            renderGames(filteredGames);
+        });
+
+        // 3. MAIN GAME & AD LOGIC
+        window.prepareGame = (gameUrl, gameName) => {
+            if(!gameUrl) { alert("গেম লিংক পাওয়া যায়নি!"); return; }
+
+            if (window.Android && window.Android.showVideoAd) {
+                window.Android.showVideoAd();
+            }
+
+            const gameView = document.getElementById('game-view');
+            const homePage = document.getElementById('home-page');
+            const title = document.getElementById('playing-game-name');
+            const gameIframe = document.getElementById('main-game-iframe');
+            
+            const entryAdContainer = document.getElementById('entry-ad-container');
+            const mediaContainer = document.getElementById('direct-media-container');
+            const smartlinkContainer = document.getElementById('smartlink-container');
+            
+            // Re-select button to ensure fresh instance
+            let smartlinkBtn = document.getElementById('smartlink-btn');
+            const newBtn = smartlinkBtn.cloneNode(true);
+            smartlinkBtn.parentNode.replaceChild(newBtn, smartlinkBtn);
+            smartlinkBtn = newBtn;
+            
+            const entryImg = document.getElementById('entry-ad-image');
+            const entryVideo = document.getElementById('entry-ad-video');
+            const entrySkipBtn = document.getElementById('entry-skip-btn');
+            const entryTimer = document.getElementById('entry-ad-timer');
+
+            gameStartTime = Date.now(); 
+
+            history.pushState({page: 'game'}, "Game View", "#game");
+
+            homePage.style.display = 'none';
+            gameView.style.display = 'flex';
+            title.innerText = gameName;
+            title.setAttribute('data-current-game', gameName); 
+
+            gameIframe.src = "";
+            gameIframe.classList.add('hidden');
+
+            let selectedAdUrl = null;
+            if (adData.urls && adData.urls.length > 0) {
+                const randomIndex = Math.floor(Math.random() * adData.urls.length);
+                selectedAdUrl = adData.urls[randomIndex];
+            }
+
+            // Function to launch game internally and Force Hide Ad
+            const launchInternalGame = () => {
+                console.log("Launching game...");
+                // Force Stop Video
+                entryVideo.pause();
+                entryVideo.src = "";
+                
+                // Hide Ad Container securely
+                entryAdContainer.classList.add('hidden');
+                entryAdContainer.style.display = 'none';
+
+                // Show Iframe
+                gameIframe.src = gameUrl; 
+                gameIframe.classList.remove('hidden'); 
+                gameIframe.style.display = 'block';
+            };
+
+            if(selectedAdUrl) {
+                entryAdContainer.classList.remove('hidden');
+                entryAdContainer.style.display = 'flex';
+                
+                mediaContainer.classList.add('hidden');
+                smartlinkContainer.classList.add('hidden');
+                entrySkipBtn.classList.add('hidden');
+                entrySkipBtn.style.display = 'none';
+                entryTimer.style.display = 'none';
+
+                const isVideo = selectedAdUrl.toLowerCase().match(/\.(mp4|webm|mov|mkv)$/i) || selectedAdUrl.includes("firebasestorage");
+                const isImage = selectedAdUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/i);
+                
+                if (isVideo || isImage) {
+                    mediaContainer.classList.remove('hidden');
+                    entryVideo.classList.add('hidden');
+                    entryImg.classList.add('hidden');
+                    entryVideo.pause();
+
+                    if (isVideo) {
+                        entryVideo.src = selectedAdUrl;
+                        entryVideo.classList.remove('hidden');
+                        entryVideo.play().catch(e => console.log("Auto-play prevented", e));
+                    } else {
+                        entryImg.src = selectedAdUrl;
+                        entryImg.classList.remove('hidden');
+                    }
+
+                    let timeLeft = adData.timer || 5;
+                    entryTimer.style.display = 'block';
+                    entryTimer.innerText = `অপেক্ষা করুন: ${timeLeft}s`;
+
+                    const interval = setInterval(() => {
+                        timeLeft--;
+                        entryTimer.innerText = `অপেক্ষা করুন: ${timeLeft}s`;
+                        
+                        if(timeLeft <= 0) {
+                            clearInterval(interval);
+                            entryTimer.style.display = 'none'; 
+                            entrySkipBtn.innerText = "Skip Video ▶"; 
+                            entrySkipBtn.classList.remove('hidden'); 
+                            entrySkipBtn.style.display = 'block';
+                        }
+                    }, 1000);
+
+                    entrySkipBtn.onclick = () => {
+                        launchInternalGame();
+                    };
+
+                } else {
+                    smartlinkContainer.classList.remove('hidden');
+                    smartlinkContainer.style.display = 'flex';
+                    
+                    smartlinkBtn.onclick = (e) => {
+                        e.preventDefault();
+                        console.log("Button Clicked");
+                        launchInternalGame();
+                    };
+
+                    entrySkipBtn.onclick = (e) => {
+                        e.preventDefault();
+                        launchInternalGame();
+                    };
+                }
+
+            } else {
+                launchInternalGame();
+            }
+        };
+
+        window.closeGameView = () => {
+            const entryVideo = document.getElementById('entry-ad-video');
+            const gameIframe = document.getElementById('main-game-iframe');
+            
+            if(gameStartTime > 0) {
+                const endTime = Date.now();
+                const duration = (endTime - gameStartTime) / 1000; 
+                const gameName = document.getElementById('playing-game-name').getAttribute('data-current-game') || "Unknown Game";
+                
+                if(duration > 2) {
+                    saveHistory(gameName, duration);
+                }
+                gameStartTime = 0;
+            }
+
+            if (entryVideo) {
+                entryVideo.pause();
+                entryVideo.src = ""; 
+            }
+            
+            if (gameIframe) {
+                gameIframe.src = "";
+                gameIframe.classList.add('hidden');
+            }
+            
+            document.getElementById('game-view').style.display = 'none';
+            document.getElementById('home-page').style.display = 'block';
+        };
+        
+        window.closeExitAd = () => {
+            document.getElementById('exit-ad-overlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
